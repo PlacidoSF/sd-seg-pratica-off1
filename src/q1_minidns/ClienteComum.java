@@ -118,10 +118,12 @@ public class ClienteComum {
             oos.flush();
             enviarBytes(baos.toByteArray());
 
-            if (simularAdulteracao) {
-                receberEResolverResposta();
-            } else {
-                receberEResolverResposta();
+            String resposta = receberEResolverResposta();
+
+            // Guarda a resolução no cache/mapa local do cliente (transparência de mobilidade)
+            if (resposta != null && resposta.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")) {
+                tabelaLocal.put(nomeServidor, resposta);
+                System.out.println("[Cliente] Cache local atualizado: " + nomeServidor + " -> " + resposta);
             }
 
         } catch (java.net.SocketTimeoutException timeout) {
@@ -135,7 +137,7 @@ public class ClienteComum {
         }
     }
 
-    private void receberEResolverResposta() throws Exception {
+    private String receberEResolverResposta() throws Exception {
         long deadline = System.currentTimeMillis() + 5000;
         while (true) {
             long resto = deadline - System.currentTimeMillis();
@@ -163,9 +165,9 @@ public class ClienteComum {
                 System.out.println("[Resultado] Resposta autenticada recebida: " + resposta + " (assinatura RSA validada)");
                 // Se for ip, guarda na tabela local
                 if (resposta.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}")) {
-                    System.out.println("[Cliente] HMAC/assinatura validado com sucesso.");
+                    System.out.println("[Cliente] Assinatura RSA validada com sucesso.");
                 }
-                return;
+                return resposta;
             }
             System.out.println("[Cliente] Op code inesperado: " + operacao + " (ignorado)");
         }

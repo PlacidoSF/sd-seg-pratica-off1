@@ -22,6 +22,11 @@ public class GeoDNS {
     private static final int PORTA_GEODNS = 5453;
     
     private final ConcurrentHashMap<String, SessaoGeo> sessoesAtivas;
+
+    // Mapeia a região fictícia do cliente para o Edge Server correspondente
+    private final ConcurrentHashMap<String, String> mapaRegioes = new ConcurrentHashMap<>();
+
+    private static final String EDGE_PADRAO = "127.0.0.1:8001";
     
     private final KeyPair parChavesRSA;
 
@@ -30,6 +35,20 @@ public class GeoDNS {
         
         System.out.println("[GEODNS] A gerar chaves RSA (2048 bits) para o Router...");
         this.parChavesRSA = RSAUtils.gerarParDeChaves();
+
+        inicializarRegioes();
+    }
+
+    /**
+     * Mapeia cada região fictícia para o Edge Server mais próximo.
+     * Regiões não cadastradas caem no Edge padrão (127.0.0.1:8001).
+     */
+    private void inicializarRegioes() {
+        mapaRegioes.put("BRASIL", "127.0.0.1:8001");
+        mapaRegioes.put("EUROPA", "127.0.0.1:8002");
+        mapaRegioes.put("AMERICA", "127.0.0.1:8003");
+        mapaRegioes.put("EUA", "127.0.0.1:8003");
+        System.out.println("[GEODNS] Regiões atendidas: " + mapaRegioes.keySet() + " | padrão: " + EDGE_PADRAO);
     }
 
     public void iniciar() {
@@ -113,7 +132,8 @@ public class GeoDNS {
                         String alvo = cmdPartes.length > 1 ? cmdPartes[1] : "?";
                         String local = cmdPartes.length > 2 ? cmdPartes[2] : "desconhecida";
                         System.out.println("[GEODNS] Consulta por '" + alvo + "' a partir de '" + local + "'.");
-                        respostaRota = "127.0.0.1:8001"; 
+                        // Avalia a localização fictícia do cliente e escolhe o Edge mais próximo
+                        respostaRota = mapaRegioes.getOrDefault(local.toUpperCase(), EDGE_PADRAO);
                         System.out.println("[GEODNS] A redirecionar cliente para o Edge em " + respostaRota);
                     } else {
                         respostaRota = "Erro na entrada de dados. Tente outra vez!";

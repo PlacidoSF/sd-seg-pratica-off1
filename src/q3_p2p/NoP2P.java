@@ -97,7 +97,7 @@ public class NoP2P {
                 
                 try {
                     byte[] payloadAberto = CryptoManager.abrirPacote(pacoteRecebido, aesDoAntecessor, rsaAntecessor);
-                    System.out.println("[P" + idLocal + "] [SEGURANÇA] Assinatura do antecessor validada (HMAC/assinatura OK).");
+                    System.out.println("[P" + idLocal + "] [SEGURANÇA] Assinatura do antecessor validada (RSA OK).");
                     String mensagem = new String(payloadAberto, StandardCharsets.UTF_8);
                     
                     processarMensagemDaRede(mensagem);

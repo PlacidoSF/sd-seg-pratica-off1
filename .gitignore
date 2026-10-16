@@ -1,1 +1,5 @@
 .vscode/
+.idea/
+logs/
+bin/
+details/
