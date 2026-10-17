@@ -149,10 +149,28 @@ public class NoP2P {
                     outSucessor.writeObject(aesCifrado);
                     outSucessor.flush();
                     System.out.println("[P" + idLocal + "] [SEGURANÇA] Handshake com Sucessor concluído.");
+                } else {
+                    try {
+                        synchronized (this) {
+                            if (socketSucessor != null && outSucessor != null && aesParaSucessor != null) {
+                                socketSucessor.sendUrgentData(0);
+                            }
+                        }
+                    } catch (java.io.IOException probeFalhou) {
+                        System.err.println("[P" + idLocal + "-Erro] Sucessor inacessível, reconectando...");
+                        synchronized (this) {
+                            try { if (socketSucessor != null) socketSucessor.close(); } catch (Exception ignored) {}
+                            socketSucessor = null; outSucessor = null; inSucessor = null; aesParaSucessor = null;
+                        }
+                    }
                 }
-                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
             } catch (Exception e) {
-                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                synchronized (this) {
+                    try { if (socketSucessor != null) socketSucessor.close(); } catch (Exception ignored) {}
+                    socketSucessor = null; outSucessor = null; inSucessor = null; aesParaSucessor = null;
+                }
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
             }
         }
     }
