@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# =============================================================================
-# parar.sh — encerra apenas os processos *java* do projeto (Q1 a Q4).
-# Filtra por nome do executável ("java") para não derrubar o shell que chamou
-# o script (que pode conter os padrões no seu próprio command line).
-# =============================================================================
-
 encerrar() {
   local pat="$1"
   local pid

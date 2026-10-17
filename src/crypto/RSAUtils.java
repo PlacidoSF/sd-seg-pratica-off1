@@ -29,14 +29,14 @@ public class RSAUtils {
     }
 
     public static byte[] assinar(byte[] hash, PrivateKey propriaChavePrivada) throws Exception {
-        Cipher cifrador = Cipher.getInstance(PADDING); //[cite: 51]
-        cifrador.init(Cipher.ENCRYPT_MODE, propriaChavePrivada); //[cite: 51]
-        return cifrador.doFinal(hash); //[cite: 51]
+        Cipher cifrador = Cipher.getInstance(PADDING);
+        cifrador.init(Cipher.ENCRYPT_MODE, propriaChavePrivada);
+        return cifrador.doFinal(hash);
     }
 
     public static byte[] decifrarAssinatura(byte[] assinatura, PublicKey chavePublicaRemetente) throws Exception {
-        Cipher decifrador = Cipher.getInstance(PADDING); //[cite: 51]
-        decifrador.init(Cipher.DECRYPT_MODE, chavePublicaRemetente); //[cite: 51]
-        return decifrador.doFinal(assinatura); //[cite: 51]
+        Cipher decifrador = Cipher.getInstance(PADDING);
+        decifrador.init(Cipher.DECRYPT_MODE, chavePublicaRemetente);
+        return decifrador.doFinal(assinatura);
     }
 }

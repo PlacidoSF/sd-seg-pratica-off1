@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Questão 4 — CDN (Origin + Edges + GeoDNS + Cliente).
 source "$(dirname "$0")/lib.sh"
 
 compilar

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Questão 3 — Anel P2P P0..P5 (TCP).
 source "$(dirname "$0")/lib.sh"
 
 compilar

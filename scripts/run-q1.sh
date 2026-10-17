@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Questão 1 — Mini-DNS (UDP).
-# Uso: ./scripts/run-q1.sh [numero_de_clientes]   (padrão: 3)
 source "$(dirname "$0")/lib.sh"
 
 compilar
@@ -15,7 +13,6 @@ for i in $(seq 1 "$N"); do
   abrir "Q1 - ClienteComum C$i" q1_minidns.ClienteComum
 done
 
-# O registrador dispara o binding dinâmico (Caso 2) enquanto os clientes escutam
 esperar 2
 abrir "Q1 - ClienteRegistrador" q1_minidns.ClienteRegistrador
 

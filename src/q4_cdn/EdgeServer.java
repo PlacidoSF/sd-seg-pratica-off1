@@ -56,7 +56,7 @@ public class EdgeServer {
             new LinkedHashMap<String, RegistroCache>(100, 0.75f, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<String, RegistroCache> eldest) {
-                    return size() > 100; // Mantém no máximo 100 itens[cite: 11]
+                    return size() > 100; // Mantém no máximo 100 itens
                 }
             }
     );
@@ -211,7 +211,7 @@ public class EdgeServer {
                 outCliente.flush();
 
             } catch (SecurityException | java.security.GeneralSecurityException se) {
-                // Falha de integridade (inclui padding RSA inválido): Encerra o socket do intruso sem corromper a tabela interna[cite: 11]
+                // Falha de integridade (inclui padding RSA inválido): Encerra o socket do intruso sem corromper a tabela interna
                 System.err.println("[EDGE-ALERTA] Violação de Segurança: " + se.getMessage());
             } catch (Exception e) {
                 System.err.println("[EDGE-ERRO] " + e.getMessage());

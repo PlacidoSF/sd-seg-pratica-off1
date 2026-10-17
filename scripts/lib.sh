@@ -1,45 +1,28 @@
 #!/usr/bin/env bash
-# =============================================================================
-# lib.sh — funções comuns dos scripts de inicialização (Prática Offline 1).
-# Uso: source "$(dirname "$0")/lib.sh"
-# =============================================================================
-
-# Diretório raiz do projeto (pasta acima de scripts/)
 PROJ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLASSES="$PROJ/bin"
 LOG_DIR="$PROJ/logs"
 JAVA_BIN="${JAVA:-java}"
 
-# -----------------------------------------------------------------------------
-# compilar(): recompila todas as fontes para bin/
-# -----------------------------------------------------------------------------
 compilar() {
   echo "[build] Compilando o projeto para $CLASSES ..."
   mkdir -p "$CLASSES" "$LOG_DIR"
-  if ! javac -d "$CLASSES" $(find "$PROJ/src" -name '*.java'); then
+  if ! find "$PROJ/src" -name '*.java' -print0 | xargs -0 javac -d "$CLASSES"; then
     echo "[build] ERRO na compilação." >&2
     exit 1
   fi
   echo "[build] OK."
 }
 
-# -----------------------------------------------------------------------------
-# abrir(): abre um componente em uma janela de terminal nova.
-#          Se não houver terminal gráfico, roda em segundo plano e grava a
-#          saída em logs/<slug>.log.
-#   uso: abrir "<titulo>" <classe> [args...]
-# -----------------------------------------------------------------------------
 abrir() {
   local titulo="$1"; shift
   local slug; slug="$(echo "$titulo" | tr ' A-Z' '_a-z')"
   local runner="$LOG_DIR/runner_${slug}.sh"
 
-  # Monta a linha de comando com aspas seguras (preserva args com espaço)
   local cmd; cmd="$(printf '%q' "$JAVA_BIN") -cp $(printf '%q' "$CLASSES")"
   local a
   for a in "$@"; do cmd+=" $(printf '%q' "$a")"; done
 
-  # Cria um pequeno script "runner" para evitar problemas de aspas nos terminais
   {
     echo '#!/usr/bin/env bash'
     echo "cd $(printf '%q' "$PROJ")"
@@ -64,9 +47,6 @@ abrir() {
   fi
 }
 
-# -----------------------------------------------------------------------------
-# esperar(): pausa simples, usada para dar tempo de subir um componente.
-# -----------------------------------------------------------------------------
 esperar() {
   sleep "${1:-2}"
 }
