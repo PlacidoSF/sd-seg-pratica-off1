@@ -28,7 +28,7 @@ para todas as questões (`shared/Pacote`).
 ```
 sd-seg-pratica-off1/
 ├── src/
-│   ├── crypto/        Núcleo criptográfico compartilhado (AES, RSA, SHA-256, CryptoManager)
+│   ├── crypto/        Núcleo criptográfico compartilhado (AES, RSA, HMAC-SHA256, CryptoManager)
 │   ├── shared/        Pacote.java — envelope de rede (texto cifrado + assinatura)
 │   ├── q1_minidns/    Questão 1
 │   ├── q2_discovery/  Questão 2
@@ -50,11 +50,11 @@ Pacote = [ textoCifrado (AES-256-CBC) , assinatura (RSA-2048) ]
 
 **Fluxo de envio** (`CryptoManager.gerarPacote`):
 1. A mensagem em claro é cifrada com **AES-256/CBC/PKCS5Padding** (IV aleatório anexado ao texto cifrado).
-2. Calcula-se o **hash SHA-256** do texto cifrado.
-3. O hash é **assinado com a chave privada RSA** do remetente.
+2. Calcula-se o **HMAC-SHA256** do texto cifrado, usando a chave AES da sessão.
+3. O HMAC é **assinado com a chave privada RSA** do remetente.
 
 **Fluxo de recebimento** (`CryptoManager.abrirPacote`):
-1. Recalcula o hash SHA-256 do texto cifrado recebido.
+1. Recalcula o HMAC-SHA256 do texto cifrado recebido com a mesma chave AES de sessão.
 2. Decifra a assinatura com a **chave pública RSA** do remetente.
 3. Compara os dois valores com `MessageDigest.isEqual` (comparação em tempo constante).
 4. Se houver divergência, dispara `SecurityException` e a mensagem é descartada.
