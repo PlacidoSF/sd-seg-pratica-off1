@@ -39,10 +39,7 @@ public class GeoDNS {
         inicializarRegioes();
     }
 
-    /**
-     * Mapeia cada região fictícia para o Edge Server mais próximo.
-     * Regiões não cadastradas caem no Edge padrão (127.0.0.1:8001).
-     */
+
     private void inicializarRegioes() {
         mapaRegioes.put("BRASIL", "127.0.0.1:8001");
         mapaRegioes.put("EUROPA", "127.0.0.1:8002");

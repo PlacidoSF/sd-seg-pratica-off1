@@ -141,7 +141,7 @@ public class EdgeServer {
                 }
                 try {
                     byte[] payloadAberto = CryptoManager.abrirPacote(pctRecebido, aesOrigem, rsaOrigem);
-                    System.out.println("[EDGE-SEG] Assinatura da Origem validada.");
+                    System.out.println("[EDGE-SEG] HMAC e assinatura da Origem validados.");
                     String mensagem = new String(payloadAberto, StandardCharsets.UTF_8);
 
                     if (mensagem.startsWith("INVALIDATE /")) {
@@ -211,7 +211,6 @@ public class EdgeServer {
                 outCliente.flush();
 
             } catch (SecurityException | java.security.GeneralSecurityException se) {
-                // Falha de integridade (inclui padding RSA inválido): Encerra o socket do intruso sem corromper a tabela interna
                 System.err.println("[EDGE-ALERTA] Violação de Segurança: " + se.getMessage());
             } catch (Exception e) {
                 System.err.println("[EDGE-ERRO] " + e.getMessage());

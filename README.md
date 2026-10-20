@@ -216,8 +216,8 @@ regiões desconhecidas caem no Edge padrão `127.0.0.1:8001`.
 - **Caso 1** — primeiro `GET /arquivo20.ext` = **MISS** (busca na Origem); segundo = **HIT** (mais rápido).
 - **Caso 2** — expiração por **TTL** (aguarda 16s e repete → MISS) e **INVALIDATE** ativo
   (digite `invalidate arquivo20.ext` no console da Origem).
-- **Caso 3** — nome inválido (`GET arquivo20`, `GET /arquivoXYZ.ext`) e pacote com assinatura
-  adulterada (o Edge encerra a conexão sem corromper o cache).
+- **Caso 3** — nome inválido (`GET arquivo20`, `GET /arquivoXYZ.ext`) e pacote com o conteúdo
+  cifrado adulterado, deixando o **HMAC inválido** (o Edge encerra a conexão sem corromper o cache).
 
 ---
 

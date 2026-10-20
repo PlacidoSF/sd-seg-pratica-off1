@@ -66,7 +66,7 @@ public class ClienteCDN {
             executarGetTCP(ipEdge, portaEdge, "GET /arquivoXYZ.ext");
 
             // teste 3: pacote adulterado
-            System.out.println("\n--- TESTE E: Fraude (assinatura corrompida, Edge deve cortar a ligação) ---");
+            System.out.println("\n--- TESTE E: Fraude (HMAC inválido: conteúdo cifrado adulterado; Edge deve cortar a ligação) ---");
             executarGetFraude(ipEdge, portaEdge, "GET /arquivo20.ext");
 
             // teste 2: por TTL
@@ -81,15 +81,12 @@ public class ClienteCDN {
         }
     }
 
-    /**
-     * Comunica com o GeoDNS via Sockets UDP para obter a rota.
-     */
+
     private String consultarGeoDNS(String comando) throws Exception {
         try (DatagramSocket socketUDP = new DatagramSocket()) {
             socketUDP.setSoTimeout(5000);
             InetAddress enderecoGeoDNS = InetAddress.getByName(ipGeoDNS);
 
-            // 1. Handshake Duplo
             enviarInt(socketUDP, 0, enderecoGeoDNS, portaGeoDNS);
             PublicKey rsaGeoDNS = (PublicKey) receberObjeto(socketUDP);
 
@@ -106,7 +103,6 @@ public class ClienteCDN {
             enviarBytes(socketUDP, baos.toByteArray(), enderecoGeoDNS, portaGeoDNS);
             Thread.sleep(500); // garante que o GeoDNS registrou a sessão antes da consulta
 
-            // 2. Envia a Consulta Cifrada
             Pacote pacoteConsulta = CryptoManager.gerarPacote(comando.getBytes(StandardCharsets.UTF_8), minhaChaveAES, meuParRSA.getPrivate());
             
             baos = new ByteArrayOutputStream();
@@ -116,7 +112,6 @@ public class ClienteCDN {
             oos.flush();
             enviarBytes(socketUDP, baos.toByteArray(), enderecoGeoDNS, portaGeoDNS);
 
-            // 3. Recebe a Rota Cifrada (GeoDNS responde com writeInt(2) + Pacote)
             byte[] buffer = new byte[8192];
             DatagramPacket dpResp = new DatagramPacket(buffer, buffer.length);
             socketUDP.receive(dpResp);
@@ -128,17 +123,13 @@ public class ClienteCDN {
             byte[] msgAberta = CryptoManager.abrirPacote(pacoteResposta, minhaChaveAES, rsaGeoDNS);
             
             String resposta = new String(msgAberta, StandardCharsets.UTF_8);
-            System.out.println("[Cliente] GeoDNS indicou a rota: " + resposta + " (assinatura validada)");
+            System.out.println("[Cliente] GeoDNS indicou a rota: " + resposta + " (HMAC/assinatura validados)");
             return resposta;
         }
     }
 
-    /**
-     * Comunica com o Edge Server via Sockets TCP para descarregar o ficheiro.
-     */
+
     private void executarGetTCP(String ip, int porta, String requisicao) {
-        long inicioTempo = System.currentTimeMillis();
-        
         try (Socket socketTCP = new Socket(ip, porta);
              ObjectOutputStream outTCP = new ObjectOutputStream(socketTCP.getOutputStream());
              ObjectInputStream inTCP = new ObjectInputStream(socketTCP.getInputStream())) {
@@ -156,12 +147,12 @@ public class ClienteCDN {
             outTCP.writeObject(aesCifrado);
             outTCP.flush();
 
-            // 2. Envia o GET Cifrado
+
+            long inicioTempo = System.currentTimeMillis();
             Pacote pacoteGet = CryptoManager.gerarPacote(requisicao.getBytes(StandardCharsets.UTF_8), minhaChaveAES, meuParRSA.getPrivate());
             outTCP.writeObject(pacoteGet);
             outTCP.flush();
 
-            // 3. Recebe o Ficheiro (ou Erro)
             Pacote pacoteResposta = (Pacote) inTCP.readObject();
             byte[] msgAberta = CryptoManager.abrirPacote(pacoteResposta, minhaChaveAES, rsaEdge);
             
@@ -175,10 +166,7 @@ public class ClienteCDN {
         }
     }
 
-    /**
-     * Envia GET com assinatura corrompida: o Edge deve descartar e cortar a ligação
-     * (EOF/timeout no cliente), sem corromper o cache.
-     */
+
     private void executarGetFraude(String ip, int porta, String requisicao) {
         try (Socket socketTCP = new Socket(ip, porta);
              ObjectOutputStream outTCP = new ObjectOutputStream(socketTCP.getOutputStream());
@@ -195,8 +183,10 @@ public class ClienteCDN {
             outTCP.flush();
 
             Pacote pct = CryptoManager.gerarPacote(requisicao.getBytes(StandardCharsets.UTF_8), minhaChaveAES, meuParRSA.getPrivate());
-            System.out.println("[Cliente] Simulando adulteração da assinatura antes do envio...");
-            pct = new Pacote(pct.getTextoCifrado(), new byte[256]);
+            System.out.println("[Cliente] Simulando adulteração do conteúdo cifrado (o HMAC deixará de corresponder)...");
+            byte[] adulterado = pct.getTextoCifrado().clone();
+            adulterado[adulterado.length - 1] ^= 0x01; // inverte 1 bit do texto cifrado
+            pct = new Pacote(adulterado, pct.getAssinatura());
             outTCP.writeObject(pct);
             outTCP.flush();
 
@@ -204,15 +194,12 @@ public class ClienteCDN {
             byte[] aberta = CryptoManager.abrirPacote(resp, minhaChaveAES, rsaEdge);
             System.out.println("[Cliente] Resposta inesperada: " + new String(aberta, StandardCharsets.UTF_8));
         } catch (java.io.EOFException | java.net.SocketException | java.net.SocketTimeoutException e) {
-            System.out.println("[Resultado E] Sucesso! O Edge cortou a ligação devido à falha de integridade.");
+            System.out.println("[Resultado E] Sucesso! O Edge cortou a ligação devido à falha de HMAC/integridade.");
         } catch (Exception e) {
             System.err.println("[Cliente-ERRO TCP] " + e.getMessage());
         }
     }
 
-    // =========================================================================
-    // MÉTODOS AUXILIARES UDP
-    // =========================================================================
     private void enviarInt(DatagramSocket socket, int valor, InetAddress ip, int porta) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);

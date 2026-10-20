@@ -140,7 +140,7 @@ public class OriginServer {
                                 oos.writeObject(pctResposta);
                                 oos.flush();
                             }
-                            System.out.println("[ORIGEM] Ficheiro servido de volta ao Edge via canal seguro (assinatura RSA).");
+                            System.out.println("[ORIGEM] Ficheiro servido de volta ao Edge via canal seguro (HMAC + assinatura RSA).");
                         } else {
                             Pacote pctErro = CryptoManager.gerarPacote(
                                     "Erro na entrada de dados. Tente outra vez!".getBytes(StandardCharsets.UTF_8),
