@@ -166,7 +166,7 @@ Ao subir, cada um se **registra** no Diretório por um canal seguro. Serviços s
 - **Caso 1** — consulta o Diretório e descobre os servidores ativos (dois serviços).
 - **Caso 2** — **load balancing round-robin**: as requisições (`10+20`, `5*4`, …) alternam
   entre os servidores, cada chamada abrindo uma sessão AES+RSA própria.
-- **Caso 3** — entrada inválida (`Calcular modulo`) e pacote adulterado (o servidor corta a conexão).
+- **Caso 3** — entrada inválida (`Calcular modulo`) e conteúdo cifrado adulterado (HMAC inválido; o servidor corta a conexão).
 
 Por padrão, o `run-q2.sh` sobe **S1 (8001, soma)**, **S2 (8002, soma)** e **S3 (8003, multiplicação)**.
 

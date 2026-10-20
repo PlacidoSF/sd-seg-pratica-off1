@@ -133,9 +133,10 @@ public class ClienteDiscovery {
             Pacote pacoteConta = CryptoManager.gerarPacote(conta.getBytes(StandardCharsets.UTF_8), minhaChaveAES, meuParRSA.getPrivate());
             
             if (simularFraude) {
-                System.out.println("[Cliente] A simular adulteração da Assinatura RSA no pacote...");
-                byte[] assinaturaFalsa = new byte[256]; 
-                pacoteConta = new Pacote(pacoteConta.getTextoCifrado(), assinaturaFalsa);
+                System.out.println("[Cliente] A simular adulteração do conteúdo cifrado (HMAC inválido)...");
+                byte[] textoCifradoAdulterado = pacoteConta.getTextoCifrado().clone();
+                textoCifradoAdulterado[textoCifradoAdulterado.length - 1] ^= 0x01;
+                pacoteConta = new Pacote(textoCifradoAdulterado, pacoteConta.getAssinatura());
             }
 
             oos.writeObject(pacoteConta);
